@@ -725,6 +725,18 @@ SSH_USER: "speiseplan"
 Damit ersetzt jede passende Mail automatisch die Datei, die die Website unter
 `/dokumente/Speiseplan.pdf` verlinkt – ohne WebDAV, ohne manuellen Upload.
 
+## Anleitung für Lehrkräfte: Speiseplan per E-Mail
+
+`docs/speiseplan-per-mail.md` beschreibt für Nicht-Techniker, wie der Speiseplan
+per E-Mail aktualisiert wird: Anforderungen an Absender, Dateiname und Format,
+was automatisch passiert (Bestätigungsmail, Umbenennung auf `Speiseplan.pdf`)
+und eine Fehlertabelle.
+
+Kurzfassung: PDF an das konfigurierte Postfach senden, Dateiname beginnt mit
+`speiseplan` (z. B. `speiseplan-erneueren.pdf`), Absender muss in
+`SENDER_ALLOWLIST` stehen. Nach spätestens einer Minute ist die Datei auf dem
+Webserver.
+
 ## Grenzen
 
 - Nur **ungesehene** Mails werden betrachtet (bewusst – so kann man eine Mail
