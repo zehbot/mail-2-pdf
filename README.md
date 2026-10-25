@@ -135,11 +135,11 @@ ssh-keygen -lf private/id_ed25519.pub          # Fingerprint des Schlüssels
 ssh -i private/id_ed25519 speiseplan@www.example.org   # sollte eine Shell bzw. SFTP liefern
 ```
 
-**Für k3s:** der private Schlüssel kommt ins Secret, nicht ins Image:
+**Für k3s:** der private Schlüssel kommt ins Secret, nicht ins Image. Die Datei `/tmp/mail-to-pdf-secret-values.env` enthält nur `IMAP_PASSWORD` – **nicht** die vollständige `private/mail-to-pdf.env`:
 
 ```bash
 kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
-  --from-env-file=/tmp/mail-to-pdf-secrets.env \
+  --from-env-file=/tmp/mail-to-pdf-secret-values.env \
   --from-file=SSH_PRIVATE_KEY=private/id_ed25519
 
 kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
@@ -275,20 +275,32 @@ Crash-Dumps und Debug-Ausgaben auf. Eine Datei mit `0400`/`0440` ist deutlich
 schwerer versehentlich zu leaken — deshalb mountet das Deployment den Key unter
 `/run/secrets/ssh/id_ed25519` und setzt nur `SSH_PRIVATE_KEY_FILE`.
 
+**Nicht verwechseln – drei verschiedene Dinge:**
+
+| Datei | Wo | Inhalt |
+|---|---|---|
+| `private/mail-to-pdf.env` | lokal auf dem Rechner | **alle** Einstellungen, wird von `./run.sh` gelesen |
+| `k8s/configmap.yaml` | im Cluster | alle **nicht** geheimen Werte (IMAP-Host, Filter, Zielpfad …) |
+| `mail-to-pdf-secret-values.env` | kurzzeitig in `/tmp` | **nur** die Geheimnisse, daraus wird das Secret gebaut |
+
+Die dritte Datei ist kein Projektbestandteil: zwei Zeilen, einmal zum Erzeugen
+des Secrets benutzt, danach gelöscht. Sie wird nicht versioniert und nicht
+kopiert – das Secret selbst liegt danach im Cluster.
+
 Secret anlegen, ohne dass Werte in der History landen:
 
 ```bash
 # Variante A: mehrere Werte aus einer geschützten Datei
-cat > /tmp/mail-to-pdf-secrets.env <<'EOF'
+cat > /tmp/mail-to-pdf-secret-values.env <<'EOF'
 IMAP_PASSWORD=hier-das-postfach-passwort-eintragen
 EOF
-chmod 600 /tmp/mail-to-pdf-secrets.env
+chmod 600 /tmp/mail-to-pdf-secret-values.env
 
 kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
-  --from-env-file=/tmp/mail-to-pdf-secrets.env \
+  --from-env-file=/tmp/mail-to-pdf-secret-values.env \
   --from-file=SSH_PRIVATE_KEY=$HOME/.ssh/mail-to-pdf
 
-shred -u /tmp/mail-to-pdf-secrets.env 2>/dev/null || rm -f /tmp/mail-to-pdf-secrets.env
+shred -u /tmp/mail-to-pdf-secret-values.env 2>/dev/null || rm -f /tmp/mail-to-pdf-secret-values.env
 ```
 
 Das Secret enthält danach die Schlüssel `IMAP_PASSWORD` (Env) und
@@ -533,14 +545,14 @@ Werte kommen aus Dateien, nicht aus der Shell-History:
 
 ```bash
 # Passwort in eine geschützte Datei schreiben (Editor, nicht echo)
-install -m 600 /dev/null /tmp/mail-to-pdf-secrets.env
-$EDITOR /tmp/mail-to-pdf-secrets.env      # Inhalt: IMAP_PASSWORD=…
+install -m 600 /dev/null /tmp/mail-to-pdf-secret-values.env
+$EDITOR /tmp/mail-to-pdf-secret-values.env      # Inhalt: IMAP_PASSWORD=…
 
 kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
-  --from-env-file=/tmp/mail-to-pdf-secrets.env \
+  --from-env-file=/tmp/mail-to-pdf-secret-values.env \
   --from-file=SSH_PRIVATE_KEY=private/id_ed25519
 
-shred -u /tmp/mail-to-pdf-secrets.env
+shred -u /tmp/mail-to-pdf-secret-values.env
 ```
 
 Kontrolle (nur Schlüsselnamen, keine Werte):
