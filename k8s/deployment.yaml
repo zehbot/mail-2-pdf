@@ -27,7 +27,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: mail-to-pdf
-          image: mail-to-pdf:0.1.0
+          image: inkassodeppen/mail-to-pdf:0.1.0   # linux/amd64 + linux/arm64
           imagePullPolicy: IfNotPresent
           args: []
           envFrom:

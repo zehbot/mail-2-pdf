@@ -333,15 +333,56 @@ docker buildx build \
   --push .
 ```
 
-Ohne passende qemu-Handler bricht der ARM-Teil ab – dann entweder auf dem
-Zielhost bauen oder `tonistiigi/binfmt --install arm64` auf dem Build-Rechner
-ausführen (siehe Projekt `wunderground`).
+Ohne passende qemu-Handler bricht der ARM-Teil ab. Abhilfe auf dem Build-Rechner:
+
+```bash
+# einmalig: ARM-Emulation registrieren
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+
+# danach einen Builder neu erzeugen, damit er die Plattform erkennt
+docker buildx create --name armbuilder --driver docker-container \
+  --driver-opt network=host --use
+docker buildx inspect --bootstrap armbuilder
+```
+
+Wichtig für Raspberry Pi 4: **64-Bit-Betriebssystem** (Raspberry Pi OS 64-bit
+oder Ubuntu) – nur dann ist die `arm64`-Variante lauffähig. Auf einem 32-Bit-OS
+(`armv7`) müsste zusätzlich `linux/arm/v7` gebaut werden; k3s selbst setzt
+64-Bit voraus.
 
 ### In eine Registry pushen
 
 ```bash
 docker tag mail-to-pdf:0.1.0 registry.example.org/schule/mail-to-pdf:0.1.0
 docker push registry.example.org/schule/mail-to-pdf:0.1.0
+```
+
+**Für dieses Projekt bereits veröffentlicht:**
+
+```
+inkassodeppen/mail-to-pdf:0.1.0   (auch :latest)
+├── linux/amd64
+└── linux/arm64        ← Raspberry Pi 4 mit 64-Bit-OS / k3s
+```
+
+Der Push erfolgte als Manifest-Liste, damit jedes Gerät automatisch die passende
+Variante zieht:
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --provenance=false \
+  -t inkassodeppen/mail-to-pdf:0.1.0 \
+  -t inkassodeppen/mail-to-pdf:latest \
+  --push .
+```
+
+Prüfen, welche Architekturen im Manifest stecken:
+
+```bash
+docker buildx imagetools inspect inkassodeppen/mail-to-pdf:0.1.0
+docker pull --platform linux/arm64 inkassodeppen/mail-to-pdf:0.1.0
+docker run --rm --platform linux/arm64 --entrypoint uname inkassodeppen/mail-to-pdf:0.1.0 -m   # aarch64
 ```
 
 Docker Hub geht genauso (`<benutzer>/mail-to-pdf:0.1.0`). Für eine private
@@ -426,8 +467,9 @@ kubectl apply -f k8s/configmap.yaml
 
 ### 4. Image-Name im Deployment setzen
 
-In `k8s/deployment.yaml` unter `containers[0].image` das gepushte Image eintragen
-(oder das importierte `mail-to-pdf:0.1.0` lassen):
+In `k8s/deployment.yaml` steht bereits das veröffentlichte Image
+`inkassodeppen/mail-to-pdf:0.1.0` (amd64 + arm64). Für eine eigene Registry den
+Namen ersetzen – oder beim Import ohne Registry `mail-to-pdf:0.1.0` eintragen:
 
 ```bash
 sed -i 's|image: mail-to-pdf:0.1.0|image: registry.example.org/schule/mail-to-pdf:0.1.0|' k8s/deployment.yaml
