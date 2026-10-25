@@ -16,7 +16,8 @@ IMAP-Postfach ──► Filter (Absender, Betreff, Anhang) ──► SFTP ──
 - Verarbeitet nur Mails, die **alle** Filter bestehen:
   1. Absender steht in `SENDER_ALLOWLIST` (exakt, `*@domain` oder `/regex/`)
   2. Betreff passt auf `SUBJECT_REGEX` (optional)
-  3. Es hängt eine Datei mit erlaubter Endung an (Standard: `.pdf`)
+  3. Es hängt eine Datei mit erlaubter Endung an (Standard: `.pdf`), optional
+     muss der Dateiname auf `ATTACHMENT_NAME_REGEX` passen
   4. Die Datei beginnt wirklich mit `%PDF-` (kein umbenanntes Word-Dokument)
   5. Größe ≤ `MAX_ATTACHMENT_MB`
 - Lädt den Anhang per **SFTP** hoch, schreibt erst in eine `.part`-Datei und
@@ -67,6 +68,7 @@ Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret
 | `SENDER_ALLOWLIST` | ja | – | Kommagetrennt: `a@b.de`, `*@schule.de`, `/^info\+.*@x\.de$/` |
 | `SUBJECT_REGEX` | nein | – | Regex auf den Betreff, case-insensitiv |
 | `ATTACHMENT_SUFFIXES` | nein | `.pdf` | erlaubte Endungen |
+| `ATTACHMENT_NAME_REGEX` | nein | – | optionaler Regex auf den Dateinamen |
 | `MAX_ATTACHMENT_MB` | nein | `25` | Größenlimit pro Datei |
 
 ### Zielserver
@@ -120,7 +122,18 @@ export SSH_PRIVATE_KEY_FILE=$HOME/.ssh/mail-to-pdf   # statt SSH_PRIVATE_KEY
 Starten:
 
 ```bash
-set -a; . ./private/.env; set +a       # exportiert alle Variablen aus .env
+./run.sh --once --dry-run      # liest private/.env, startet die App
+./run.sh                       # Dauerbetrieb
+```
+
+`run.sh` liest die Datei zeilenweise, statt sie zu `source`en: Passwörter mit
+Sonderzeichen (`!!`, `$`, Backticks) würden in der Shell sonst interpoliert
+oder die History-Expansion auslösen.
+
+Alternativ von Hand:
+
+```bash
+set -a; . ./private/.env; set +a
 .venv/bin/python -m app.main --once --dry-run
 ```
 

@@ -17,6 +17,8 @@ data:
   # Optional: Betreff muss passen (Regex, case-insensitiv)
   SUBJECT_REGEX: "speiseplan"
   ATTACHMENT_SUFFIXES: ".pdf"
+  # optional: Regex auf den Dateinamen des Anhangs
+  ATTACHMENT_NAME_REGEX: ""
   MAX_ATTACHMENT_MB: "25"
   SSH_HOST: "www.example.org"
   SSH_PORT: "22"

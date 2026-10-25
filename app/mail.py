@@ -11,7 +11,14 @@ from email.header import decode_header, make_header
 from typing import Iterator, Optional
 
 from .config import Settings
-from .filters import has_suffix, looks_like_pdf, parse_address, sender_matches, subject_matches
+from .filters import (
+    filename_matches,
+    has_suffix,
+    looks_like_pdf,
+    parse_address,
+    sender_matches,
+    subject_matches,
+)
 
 log = logging.getLogger(__name__)
 
@@ -102,6 +109,13 @@ def find_candidates(client: imaplib.IMAP4, settings: Settings) -> list[Candidate
         for filename, payload in _iter_attachments(message):
             if not has_suffix(filename, settings.attachment_suffixes):
                 log.debug("skip attachment %s: suffix not allowed", filename)
+                continue
+            try:
+                if not filename_matches(filename, settings.attachment_name_regex):
+                    log.debug("skip attachment %s: name does not match", filename)
+                    continue
+            except ValueError as exc:
+                log.error("%s", exc)
                 continue
             if len(payload) > settings.max_attachment_bytes:
                 log.warning(

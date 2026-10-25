@@ -48,6 +48,16 @@ def subject_matches(subject: str, pattern: Optional[str]) -> bool:
         raise ValueError(f"invalid SUBJECT_REGEX {pattern!r}: {exc}") from exc
 
 
+def filename_matches(filename: str, pattern: Optional[str]) -> bool:
+    """Optional regex on the attachment name; empty pattern matches everything."""
+    if not pattern:
+        return True
+    try:
+        return re.search(pattern, filename, re.IGNORECASE) is not None
+    except re.error as exc:
+        raise ValueError(f"invalid ATTACHMENT_NAME_REGEX {pattern!r}: {exc}") from exc
+
+
 def has_suffix(filename: str, suffixes: tuple[str, ...]) -> bool:
     lowered = filename.lower()
     return any(lowered.endswith(suffix) for suffix in suffixes)

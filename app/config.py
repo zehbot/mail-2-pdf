@@ -60,6 +60,7 @@ class Settings:
     # Filtering
     sender_patterns: tuple[str, ...]
     subject_regex: Optional[str]
+    attachment_name_regex: Optional[str]
     attachment_suffixes: tuple[str, ...]
     max_attachment_bytes: int
 
@@ -124,6 +125,7 @@ def load_settings(dry_run: bool = False) -> Settings:
         poll_interval=max(10, _get_int("POLL_INTERVAL", 60)),
         sender_patterns=sender_patterns,
         subject_regex=_get("SUBJECT_REGEX"),
+        attachment_name_regex=_get("ATTACHMENT_NAME_REGEX"),
         attachment_suffixes=suffixes,
         max_attachment_bytes=_get_int("MAX_ATTACHMENT_MB", 25) * 1024 * 1024,
         ssh_host=_get("SSH_HOST", required=True) or "",

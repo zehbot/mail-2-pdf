@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.filters import (  # noqa: E402  (Import nach sys.path-Anpassung)
+    filename_matches,
     has_suffix,
     looks_like_pdf,
     parse_address,
@@ -87,6 +88,24 @@ class AttachmentTests(unittest.TestCase):
     def test_render_rejects_unknown_placeholder(self):
         with self.assertRaises(ValueError):
             render_remote_name("{unbekannt}.pdf", "Plan.pdf")
+
+
+class FileNameTests(unittest.TestCase):
+    def test_pattern_matches_lowercase(self):
+        self.assertTrue(filename_matches("speiseplan.pdf", r"^speiseplan.*\.pdf$"))
+
+    def test_pattern_is_case_insensitive(self):
+        self.assertTrue(filename_matches("Speiseplan_KW44.PDF", r"^speiseplan.*\.pdf$"))
+
+    def test_other_document_is_rejected(self):
+        self.assertFalse(filename_matches("hausordnung.pdf", r"^speiseplan.*\.pdf$"))
+
+    def test_no_pattern_matches_everything(self):
+        self.assertTrue(filename_matches("beliebig.pdf", None))
+
+    def test_invalid_pattern_raises(self):
+        with self.assertRaises(ValueError):
+            filename_matches("x.pdf", "(")
 
 
 if __name__ == "__main__":
