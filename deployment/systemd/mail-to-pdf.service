@@ -22,7 +22,7 @@ WorkingDirectory=/home/cbot/PycharmProjects/mail-to-pdf
 
 # Alle Variablen aus der .env; systemd liest die Datei wörtlich (keine Shell),
 # Sonderzeichen wie !! oder $ im Passwort bleiben dadurch unangetastet.
-EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/.env
+EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/mail-to-pdf.env
 
 Environment=PYTHONDONTWRITEBYTECODE=1
 ExecStart=/home/cbot/PycharmProjects/mail-to-pdf/.venv/bin/python -m app.main

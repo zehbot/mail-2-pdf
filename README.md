@@ -219,12 +219,15 @@ nur per `ssh-keyscan`).
 
 Ziel: nichts landet im Repo, nichts in der Shell-History.
 
+Der Name ist frei wählbar – wichtig ist nur, dass `run.sh`, Compose und
+die systemd-Units auf denselben Pfad zeigen:
+
 ```bash
 cd mail-to-pdf
 mkdir -p private
-cp .env.example private/.env
-chmod 600 private/.env         # nur du darfst lesen
-$EDITOR private/.env           # IMAP_PASSWORD eintragen
+cp .env.example private/mail-to-pdf.env
+chmod 600 private/mail-to-pdf.env         # nur du darfst lesen
+$EDITOR private/mail-to-pdf.env           # IMAP_PASSWORD eintragen
 ```
 
 Den **privaten Key** nicht in `.env` kleben, sondern als Datei referenzieren:
@@ -238,7 +241,7 @@ export SSH_PRIVATE_KEY_FILE=$HOME/.ssh/mail-to-pdf   # statt SSH_PRIVATE_KEY
 Starten:
 
 ```bash
-./run.sh --once --dry-run      # liest private/.env, startet die App
+./run.sh --once --dry-run      # liest private/mail-to-pdf.env, startet die App
 ./run.sh                       # Dauerbetrieb
 ```
 
@@ -249,7 +252,7 @@ oder die History-Expansion auslösen.
 Alternativ von Hand:
 
 ```bash
-set -a; . ./private/.env; set +a
+set -a; . ./private/mail-to-pdf.env; set +a
 .venv/bin/python -m app.main --once --dry-run
 ```
 
@@ -257,11 +260,11 @@ Wo landet was:
 
 | Geheimnis | Ort | Rechte |
 |---|---|---|
-| Postfach-Passwort | `private/.env` (gitignored) | `600` |
+| Postfach-Passwort | `private/mail-to-pdf.env` (gitignored) | `600` |
 | SSH-Key | `private/id_ed25519` oder `~/.ssh/mail-to-pdf` | `600`, per `SSH_PRIVATE_KEY_FILE` |
 | Zielserver-Fingerprint | `.env` (`SSH_HOST_FINGERPRINT`) | kein Geheimnis, aber Pflicht |
 
-`private/` ist bis auf `.gitkeep` ignoriert; prüfen mit `git check-ignore -v private/.env`.
+`private/` ist bis auf `.gitkeep` ignoriert; prüfen mit `git check-ignore -v private/mail-to-pdf.env`.
 
 ### k3s
 
@@ -419,14 +422,14 @@ docker build -t mail-to-pdf:0.1.0 .
 docker run --rm mail-to-pdf:0.1.0 --help
 
 # Ein Durchlauf mit der echten Konfiguration, ohne Upload
-docker run --rm --env-file private/.env mail-to-pdf:0.1.0 --once --dry-run
+docker run --rm --env-file private/mail-to-pdf.env mail-to-pdf:0.1.0 --once --dry-run
 
 # Wie im Cluster: read-only Root, /tmp als tmpfs
 docker run --rm --read-only --tmpfs /tmp \
-  --env-file private/.env mail-to-pdf:0.1.0 --once
+  --env-file private/mail-to-pdf.env mail-to-pdf:0.1.0 --once
 ```
 
-`--env-file` liest die lokale `private/.env`; die Datei bleibt auf dem Host und
+`--env-file` liest die lokale `private/mail-to-pdf.env`; die Datei bleibt auf dem Host und
 wird nicht ins Image kopiert.
 
 ### Mehrere Architekturen (k3s auf ARM / Raspberry Pi)

@@ -17,7 +17,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/home/cbot/PycharmProjects/mail-to-pdf
-EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/.env
+EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/mail-to-pdf.env
 Environment=PYTHONDONTWRITEBYTECODE=1
 ExecStart=/home/cbot/PycharmProjects/mail-to-pdf/.venv/bin/python -m app.main
 Restart=on-failure
