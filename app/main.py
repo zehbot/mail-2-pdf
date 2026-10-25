@@ -148,7 +148,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     while _running:
         try:
             count = process_once(settings, state)
-            log.debug("cycle finished, %d transfer(s)", count)
+            if count:
+                log.info("%d Datei(en) übertragen", count)
+            elif args.once:
+                log.info("keine passende Nachricht gefunden")
         except Exception as exc:  # noqa: BLE001 - never exit on a single failure
             log.error("cycle failed: %s", exc)
 

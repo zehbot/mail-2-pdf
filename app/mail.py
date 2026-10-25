@@ -80,7 +80,6 @@ def find_candidates(client: imaplib.IMAP4, settings: Settings) -> list[Candidate
         raise RuntimeError("IMAP search failed")
 
     numbers = data[0].split() if data and data[0] else []
-    log.debug("%d unseen message(s)", len(numbers))
 
     found: list[Candidate] = []
     for number in numbers:
@@ -135,6 +134,11 @@ def find_candidates(client: imaplib.IMAP4, settings: Settings) -> list[Candidate
                     payload=payload,
                 )
             )
+    log.info(
+        "%d ungelesene Nachricht(en) geprüft, %d Treffer",
+        len(numbers),
+        len(found),
+    )
     return found
 
 
