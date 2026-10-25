@@ -730,7 +730,16 @@ Damit ersetzt jede passende Mail automatisch die Datei, die die Website unter
 `docs/speiseplan-per-mail.md` beschreibt für Nicht-Techniker, wie der Speiseplan
 per E-Mail aktualisiert wird: Anforderungen an Absender, Dateiname und Format,
 was automatisch passiert (Bestätigungsmail, Umbenennung auf `Speiseplan.pdf`)
-und eine Fehlertabelle.
+und eine Fehlertabelle. Dieselbe Anleitung gibt es als **PDF** zum Ausdrucken
+oder Weitergeben: `docs/speiseplan-per-mail.pdf` (2 Seiten, A4).
+
+Neu erzeugen nach Änderungen an der Markdown-Datei:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install weasyprint markdown
+.venv/bin/python tools/md2pdf.py docs/speiseplan-per-mail.md docs/speiseplan-per-mail.pdf
+```
 
 Kurzfassung: PDF an das konfigurierte Postfach senden, Dateiname beginnt mit
 `speiseplan` (z. B. `speiseplan-erneueren.pdf`), Absender muss in
