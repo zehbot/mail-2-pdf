@@ -99,7 +99,7 @@ Ohne Pin verweigert das Programm die Verbindung – das ist Absicht.
 **Wert ermitteln – am sichersten auf dem Zielserver:**
 
 ```bash
-ssh rootwww.example.org 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'
+ssh root@www.example.org 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'
 # 256 SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA www.example.org (ED25519)
 ```
 
