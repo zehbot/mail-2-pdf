@@ -91,6 +91,51 @@ Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret
 \* genau eines der drei Host-Key-Verfahren beziehungsweise einer der beiden
 Key-Eingaben.
 
+### Host-Key prüfen und pinnen
+
+Der Fingerprint schützt davor, dass sich ein fremder Server als Ziel ausgibt.
+Ohne Pin verweigert das Programm die Verbindung – das ist Absicht.
+
+**Wert ermitteln – am sichersten auf dem Zielserver:**
+
+```bash
+ssh rootwww.example.org 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'
+# 256 SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA www.example.org (ED25519)
+```
+
+**Von außen, ohne Login:**
+
+```bash
+ssh-keyscan -t ed25519 www.example.org 2>/dev/null | ssh-keygen -lf -
+```
+
+Bei abweichendem Port: `ssh-keyscan -p 2222 …`.
+
+**In die ConfigMap setzen:**
+
+```bash
+kubectl -n mail-to-pdf patch configmap mail-to-pdf-config --type merge \
+  -p '{"data":{"SSH_HOST_FINGERPRINT":"SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}'
+
+kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
+```
+
+Kontrolle:
+
+```bash
+kubectl -n mail-to-pdf get configmap mail-to-pdf-config \
+  -o jsonpath='{.data.SSH_HOST_FINGERPRINT}{"\n"}'
+```
+
+**Zusammengehörigkeit:** Fingerprint und `SSH_HOST` müssen dasselbe Ziel
+beschreiben. Beim Wechsel zwischen Test- und Produktivserver beide Werte
+zusammen ändern, sonst bricht die Verbindung mit
+`host key mismatch for …: expected SHA256:…, got SHA256:…` ab.
+
+Nach einer Neuinstallation des Servers ändert sich der Host-Key – dann den Pin
+bewusst erneuern (am besten gegen den Wert auf dem Server selbst prüfen, nicht
+nur per `ssh-keyscan`).
+
 ### Laufzeit
 
 | Variable | Standard | Bedeutung |
