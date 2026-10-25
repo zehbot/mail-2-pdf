@@ -4,7 +4,7 @@ services:
     build: .
     image: mail-to-pdf:dev
     container_name: mail-to-pdf
-    env_file: .env
+    env_file: private/.env
     command: ["--once", "--dry-run"]
     restart: "no"
     read_only: true

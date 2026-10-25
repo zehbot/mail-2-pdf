@@ -1,8 +1,11 @@
-# Secrets
+# Persoenliche Secrets - nur der Platzhalter wird versioniert
+private/*
+!private/.gitkeep
+
+# Alte Ablage direkt im Projektordner (falls noch vorhanden)
 .env
 *.pem
 *.key
-private/
 
 # Python
 .venv/
@@ -17,4 +20,3 @@ __pycache__/
 # Laufzeitdaten
 state.json
 *.log
-/ionos_email_setup.md

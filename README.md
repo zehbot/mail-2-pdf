@@ -103,9 +103,10 @@ Ziel: nichts landet im Repo, nichts in der Shell-History.
 
 ```bash
 cd mail-to-pdf
-cp .env.example .env
-chmod 600 .env                 # nur du darfst lesen
-$EDITOR .env                   # IMAP_PASSWORD eintragen
+mkdir -p private
+cp .env.example private/.env
+chmod 600 private/.env         # nur du darfst lesen
+$EDITOR private/.env           # IMAP_PASSWORD eintragen
 ```
 
 Den **privaten Key** nicht in `.env` kleben, sondern als Datei referenzieren:
@@ -119,7 +120,7 @@ export SSH_PRIVATE_KEY_FILE=$HOME/.ssh/mail-to-pdf   # statt SSH_PRIVATE_KEY
 Starten:
 
 ```bash
-set -a; . ./.env; set +a       # exportiert alle Variablen aus .env
+set -a; . ./private/.env; set +a       # exportiert alle Variablen aus .env
 .venv/bin/python -m app.main --once --dry-run
 ```
 
@@ -127,11 +128,11 @@ Wo landet was:
 
 | Geheimnis | Ort | Rechte |
 |---|---|---|
-| Postfach-Passwort | `.env` (gitignored) | `600` |
-| SSH-Key | `~/.ssh/mail-to-pdf` | `600`, per `SSH_PRIVATE_KEY_FILE` |
+| Postfach-Passwort | `private/.env` (gitignored) | `600` |
+| SSH-Key | `private/id_ed25519` oder `~/.ssh/mail-to-pdf` | `600`, per `SSH_PRIVATE_KEY_FILE` |
 | Zielserver-Fingerprint | `.env` (`SSH_HOST_FINGERPRINT`) | kein Geheimnis, aber Pflicht |
 
-`.env` steht in `.gitignore`; prüfen mit `git check-ignore -v .env`.
+`private/` ist bis auf `.gitkeep` ignoriert; prüfen mit `git check-ignore -v private/.env`.
 
 ### k3s
 
@@ -224,7 +225,7 @@ lädt aber nichts hoch und markiert keine Mail als gelesen.
 
 ```bash
 docker build -t mail-to-pdf:0.1.0 .
-docker run --rm --env-file .env mail-to-pdf:0.1.0 --once --dry-run
+docker run --rm --env-file private/.env mail-to-pdf:0.1.0 --once --dry-run
 ```
 
 ## k3s
