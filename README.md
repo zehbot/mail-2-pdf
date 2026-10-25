@@ -725,31 +725,26 @@ SSH_USER: "speiseplan"
 Damit ersetzt jede passende Mail automatisch die Datei, die die Website unter
 `/dokumente/Speiseplan.pdf` verlinkt – ohne WebDAV, ohne manuellen Upload.
 
-## Anleitung für Lehrkräfte: Speiseplan per E-Mail
+## Anleitungen für Lehrkräfte
 
-`docs/speiseplan-per-mail.md` beschreibt für Nicht-Techniker, wie der Speiseplan
-per E-Mail aktualisiert wird: Anforderungen an Absender, Dateiname und Format,
-was automatisch passiert (Bestätigungsmail, Umbenennung auf `Speiseplan.pdf`)
-und eine Fehlertabelle. Dieselbe Anleitung gibt es als **PDF** zum Ausdrucken
-oder Weitergeben: `docs/speiseplan-per-mail.pdf` (2 Seiten, A4).
+Die Anleitungen zum E-Mail-Upload des Speiseplans liegen **lokal** unter
+`private/docs/` und sind bewusst **nicht** Teil des Repositories (sie enthalten
+teilweise echte Adressen):
 
-Für die Weitergabe an das Kollegium gibt es zusätzlich eine **offizielle
-Fassung** ohne private Adressen (`docs/speiseplan-per-mail-offiziell.pdf`):
-dort ist nur der Schul-Absender `*@odenwaldkreis.de` genannt, das Postfach
-erscheint als „Postfachadresse der Schule".
+| Datei | Zweck |
+|---|---|
+| `speiseplan-per-mail-offiziell.md/.pdf` | offizielle Fassung für das Kollegium (nur Schul-Adressen) |
+| `speiseplan-per-mail-neutral.md/.pdf` | neutrale Fassung mit `example.org`-Platzhaltern |
+| `speiseplan-per-mail.md/.pdf` | interne Fassung mit echten Adressen und Zielpfaden |
 
-Neu erzeugen nach Änderungen an der Markdown-Datei:
+PDF neu erzeugen nach Änderungen:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install weasyprint markdown
-.venv/bin/python tools/md2pdf.py docs/speiseplan-per-mail.md docs/speiseplan-per-mail.pdf
+.venv/bin/python tools/md2pdf.py private/docs/speiseplan-per-mail-offiziell.md \
+                                   private/docs/speiseplan-per-mail-offiziell.pdf
 ```
-
-Kurzfassung: PDF an das konfigurierte Postfach senden, Dateiname beginnt mit
-`speiseplan` (z. B. `speiseplan-erneueren.pdf`), Absender muss in
-`SENDER_ALLOWLIST` stehen. Nach spätestens einer Minute ist die Datei auf dem
-Webserver.
 
 ## Grenzen
 
