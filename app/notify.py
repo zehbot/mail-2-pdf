@@ -25,7 +25,9 @@ def build_reply(
     msg["From"] = settings.smtp_from or settings.imap_user
     msg["To"] = sender
     msg["Date"] = formatdate(localtime=True)
-    msg["Message-ID"] = make_msgid(domain="mail-to-pdf")
+    # Message-ID aus der echten Absenderdomain - seriöser und für Filter plausibel
+    domain = (settings.smtp_from or settings.imap_user).rpartition("@")[2] or None
+    msg["Message-ID"] = make_msgid(domain=domain)
 
     prefix = settings.reply_subject_prefix or "Re: "
     clean_subject = subject if subject.lower().startswith(prefix.strip().lower()) else prefix + subject
