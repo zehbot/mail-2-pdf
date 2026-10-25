@@ -128,7 +128,7 @@ def load_settings(dry_run: bool = False) -> Settings:
     )
 
     reply_enabled = _get_bool("REPLY_ENABLED", False)
-    smtp_host = _get("SMTP_HOST", "smtp.ionos.de") or ""
+    smtp_host = _get("SMTP_HOST", "") or ""
     if reply_enabled and not smtp_host:
         raise ConfigError("SMTP_HOST is required when REPLY_ENABLED is true")
 

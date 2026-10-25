@@ -24,14 +24,14 @@ from app.filters import (  # noqa: E402  (Import nach sys.path-Anpassung)
 
 
 class SenderTests(unittest.TestCase):
-    PATTERNS = ("sekretariat@schule.de", "*@grundschulerothenberg.de", "/^info\\+.*@example\\.org$/")
+    PATTERNS = ("sekretariat@schule.de", "*@example.org", "/^info\\+.*@example\\.org$/")
 
     def test_exact_match_is_case_insensitive(self):
         self.assertTrue(sender_matches("sekretariat@schule.de", self.PATTERNS))
         self.assertTrue(sender_matches("SEKRETARIAT@SCHULE.DE", self.PATTERNS))
 
     def test_glob_matches_domain(self):
-        self.assertTrue(sender_matches("lehrer@grundschulerothenberg.de", self.PATTERNS))
+        self.assertTrue(sender_matches("lehrer@example.org", self.PATTERNS))
 
     def test_regex_pattern(self):
         self.assertTrue(sender_matches("info+x@example.org", self.PATTERNS))
@@ -112,8 +112,8 @@ class ReplyTests(unittest.TestCase):
     """Prüft nur den Aufbau der Bestätigungs-Mail (ohne SMTP)."""
 
     class Stub:
-        smtp_from = "m2f@hase10.de"
-        imap_user = "m2f@hase10.de"
+        smtp_from = "speiseplan@example.org"
+        imap_user = "speiseplan@example.org"
         reply_subject_prefix = "Re: "
         reply_text = "Die Datei wurde erfolgreich uebertragen."
 

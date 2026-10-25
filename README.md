@@ -48,7 +48,7 @@ Alles über Umgebungsvariablen (12-Factor, passt zu k3s).
 
 ### Postfach
 
-Beispiel IONOS (siehe `ionos_email_setup.md`): `IMAP_HOST=imap.ionos.de`,
+Beispiel: `IMAP_HOST=imap.example.org`,
 `IMAP_PORT=993`, `IMAP_SSL=true` – Port und TLS sind bereits die Vorgaben.
 Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret.
 
@@ -85,7 +85,7 @@ Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret
 | `SSH_HOST_FINGERPRINT` | * | – | `SHA256:…` des Servers (`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`) |
 | `SSH_KNOWN_HOSTS` | * | – | alternativ: Pfad zu einer known_hosts-Datei |
 | `SSH_TRUST_UNKNOWN` | nein | `false` | akzeptiert jeden Host-Key (nur zum Testen) |
-| `REMOTE_DIR` | ja | – | Zielordner, z. B. `/var/www/gsr-html-web/dokumente` |
+| `REMOTE_DIR` | ja | – | Zielordner, z. B. `/var/www/example-web/dokumente` |
 | `REMOTE_FILENAME` | nein | – | fester Zielname bzw. Vorlage mit `{date}`, `{time}`, `{timestamp}`, `{stem}`, `{suffix}` |
 
 \* genau eines der drei Host-Key-Verfahren beziehungsweise einer der beiden
@@ -99,7 +99,7 @@ Key-Eingaben.
 | `REPLY_ON_DRY_RUN` | `false` | Bestätigung auch im Dry-Run (Betreff erhält `[TEST] `) |
 | `REPLY_TEXT` | „Die Datei wurde erfolgreich übertragen." | Textkörper der Antwort |
 | `REPLY_SUBJECT_PREFIX` | `Re: ` | Präfix; wird nicht doppelt gesetzt |
-| `SMTP_HOST` | `smtp.ionos.de` | SMTP-Server |
+| `SMTP_HOST` | `smtp.example.org` | SMTP-Server |
 | `SMTP_PORT` | `587` | Port |
 | `SMTP_STARTTLS` / `SMTP_SSL` | `true` / `false` | Verschlüsselung |
 | `SMTP_USER` / `SMTP_PASSWORD` | = `IMAP_USER` / `IMAP_PASSWORD` | Zugangsdaten |
@@ -412,13 +412,13 @@ Weicht das SMTP-Passwort vom IMAP-Passwort ab, zusätzlich
 
 | Feld | Beispiel |
 |---|---|
-| `IMAP_HOST` / `IMAP_PORT` | `imap.ionos.de` / `993` |
-| `IMAP_USER` | `m2f@hase10.de` |
-| `SENDER_ALLOWLIST` | `*@odenwaldkreis.de,uwe.bauer@gmail.com` |
+| `IMAP_HOST` / `IMAP_PORT` | `imap.example.org` / `993` |
+| `IMAP_USER` | `speiseplan@example.org` |
+| `SENDER_ALLOWLIST` | `*@example.org,eltern@example.org` |
 | `ATTACHMENT_NAME_REGEX` | `^speiseplan.*\.pdf$` |
-| `SSH_HOST` / `SSH_USER` | `www.grundschulerothenberg.de` / `speiseplan` |
+| `SSH_HOST` / `SSH_USER` | `www.example.org` / `speiseplan` |
 | `SSH_HOST_FINGERPRINT` | `SHA256:…` (Pflicht!) |
-| `REMOTE_DIR` / `REMOTE_FILENAME` | `/var/www/gsr-html-web/dokumente` / `Speiseplan.pdf` |
+| `REMOTE_DIR` / `REMOTE_FILENAME` | `/var/www/example-web/dokumente` / `Speiseplan.pdf` |
 
 ```bash
 kubectl apply -f k8s/configmap.yaml
@@ -446,7 +446,7 @@ kubectl -n mail-to-pdf logs -f deploy/mail-to-pdf
 Erwartete Ausgabe im Log:
 
 ```
-mail-to-pdf 0.1.0 starting (mailbox=INBOX, target=speiseplan@www.grundschulerothenberg.de:22, dry_run=False)
+mail-to-pdf 0.1.0 starting (mailbox=INBOX, target=speiseplan@www.example.org:22, dry_run=False)
 0 ungelesene Nachricht(en) geprüft, 0 Treffer
 ```
 
@@ -498,12 +498,12 @@ kubectl -n mail-to-pdf delete configmap mail-to-pdf-config secret mail-to-pdf-se
 kubectl delete namespace mail-to-pdf
 ```
 
-## Beispiel: Speiseplan der Grundschule
+## Beispiel: Speiseplan der Schule
 
 ```yaml
-SENDER_ALLOWLIST: "sekretariat@grundschulerothenberg.de"
+SENDER_ALLOWLIST: "sekretariat@example.org"
 SUBJECT_REGEX: "speiseplan"
-REMOTE_DIR: "/var/www/gsr-html-web/dokumente"
+REMOTE_DIR: "/var/www/example-web/dokumente"
 REMOTE_FILENAME: "Speiseplan.pdf"
 SSH_USER: "speiseplan"
 ```
