@@ -88,6 +88,21 @@ def handle_candidate(settings, state: State, client, candidate: Candidate) -> No
         _send_reply_safely(settings, candidate, dry_run=False)
 
 
+def _send_reply_safely(settings, candidate: Candidate, dry_run: bool) -> None:
+    """Bestätigungsmail darf die Übertragung nie scheitern lassen."""
+    try:
+        send_reply(
+            settings,
+            sender=candidate.sender,
+            subject=candidate.subject,
+            message_id=candidate.message_id,
+            dry_run=dry_run,
+        )
+        log.info("confirmation sent to %s%s", candidate.sender, " (test)" if dry_run else "")
+    except Exception as exc:  # noqa: BLE001 - SMTP-Fehler sind nicht fatal
+        log.error("could not send confirmation to %s: %s", candidate.sender, exc)
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Watch an IMAP mailbox and forward matching PDF attachments via SFTP."
