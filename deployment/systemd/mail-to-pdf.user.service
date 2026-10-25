@@ -1,0 +1,32 @@
+# User-Dienst (ohne root): läuft in der Session von cbot.
+#
+# Installation:
+#   cp deployment/systemd/mail-to-pdf.user.service ~/.config/systemd/user/mail-to-pdf.service
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now mail-to-pdf
+#
+# Logs:
+#   journalctl --user -u mail-to-pdf -f
+
+[Unit]
+Description=mail-to-pdf - Mailpostfach nach PDF-Upload auf Webserver
+Documentation=file:/home/cbot/PycharmProjects/mail-to-pdf/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/cbot/PycharmProjects/mail-to-pdf
+EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/home/cbot/PycharmProjects/mail-to-pdf/.venv/bin/python -m app.main
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mail-to-pdf
+# Sandbox-Optionen wie ProtectSystem/ProtectHome sind in User-Units nicht erlaubt
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

@@ -247,11 +247,29 @@ lädt aber nichts hoch und markiert keine Mail als gelesen.
 
 ### Betrieb als systemd-Dienst (lokal)
 
+**Variante ohne root (User-Dienst, hier bereits eingerichtet):**
+
+```bash
+cp deployment/systemd/mail-to-pdf.user.service ~/.config/systemd/user/mail-to-pdf.service
+systemctl --user daemon-reload
+systemctl --user enable --now mail-to-pdf
+loginctl enable-linger cbot          # läuft auch ohne angemeldete Sitzung
+```
+
+Logs dann mit `--user`:
+
+```bash
+journalctl --user -u mail-to-pdf -f
+journalctl --user -u mail-to-pdf -n 50
+```
+
+**Variante als Systemdienst (root):**
+
 ```bash
 sudo cp deployment/systemd/mail-to-pdf.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now mail-to-pdf
-systemctl status mail-to-pdf
+journalctl -u mail-to-pdf -f          # ohne --user
 ```
 
 Das Script schreibt auf `stderr` – systemd übernimmt das automatisch ins Journal,
