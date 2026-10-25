@@ -1,4 +1,5 @@
 # Persoenliche Secrets - nur der Platzhalter wird versioniert
+/ionos_email_setup.md
 private/*
 !private/.gitkeep
 
