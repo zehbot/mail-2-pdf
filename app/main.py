@@ -17,7 +17,7 @@ from .mail import Candidate, connect, find_candidates, mark_seen
 from .state import State
 from .transfer import upload
 
-log = logging.getLogger("mail2web")
+log = logging.getLogger("mail-to-pdf")
 _running = True
 
 
@@ -110,7 +110,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
 
     log.info(
-        "mail2web %s starting (mailbox=%s, target=%s@%s:%s, dry_run=%s)",
+        "mail-to-pdf %s starting (mailbox=%s, target=%s@%s:%s, dry_run=%s)",
         __version__,
         settings.imap_mailbox,
         settings.ssh_user,
@@ -138,7 +138,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 break
             time.sleep(1)
 
-    log.info("mail2web stopped")
+    log.info("mail-to-pdf stopped")
     return 0
 
 

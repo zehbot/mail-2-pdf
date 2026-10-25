@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mail2web-config
-  namespace: mail2web
+  name: mail-to-pdf-config
+  namespace: mail-to-pdf
 data:
   IMAP_HOST: "imap.example.org"
   IMAP_PORT: "993"
@@ -25,5 +25,5 @@ data:
   REMOTE_FILENAME: "Speiseplan.pdf"
   # Host-Key-Prüfung: SHA256-Fingerprint des Servers (ssh-keygen -lf ...)
   SSH_HOST_FINGERPRINT: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  STATE_FILE: "/tmp/mail2web-state.json"
+  STATE_FILE: "/tmp/mail-to-pdf-state.json"
   LOG_LEVEL: "INFO"

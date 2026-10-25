@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mail2web
-  namespace: mail2web
+  name: mail-to-pdf
+  namespace: mail-to-pdf
   labels:
-    app: mail2web
+    app: mail-to-pdf
 spec:
   replicas: 1                # genau eine Instanz - sonst verarbeitet jede Instanz dieselbe Mail
   strategy:
     type: Recreate           # kein paralleles Rollout mit zwei Pollern
   selector:
     matchLabels:
-      app: mail2web
+      app: mail-to-pdf
   template:
     metadata:
       labels:
-        app: mail2web
+        app: mail-to-pdf
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -26,23 +26,23 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: mail2web
-          image: mail2web:0.1.0
+        - name: mail-to-pdf
+          image: mail-to-pdf:0.1.0
           imagePullPolicy: IfNotPresent
           args: []
           envFrom:
             - configMapRef:
-                name: mail2web-config
+                name: mail-to-pdf-config
           env:
             - name: IMAP_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mail2web-secrets
+                  name: mail-to-pdf-secrets
                   key: IMAP_PASSWORD
             - name: SSH_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: mail2web-secrets
+                  name: mail-to-pdf-secrets
                   key: SSH_PRIVATE_KEY
           securityContext:
             allowPrivilegeEscalation: false

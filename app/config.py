@@ -136,7 +136,7 @@ def load_settings(dry_run: bool = False) -> Settings:
         ssh_trust_unknown=_get_bool("SSH_TRUST_UNKNOWN", False),
         remote_dir=_get("REMOTE_DIR", required=True) or "",
         remote_filename=_get("REMOTE_FILENAME"),
-        state_file=_get("STATE_FILE", "/tmp/mail2web-state.json") or "/tmp/mail2web-state.json",
+        state_file=_get("STATE_FILE", "/tmp/mail-to-pdf-state.json") or "/tmp/mail-to-pdf-state.json",
         dry_run=dry_run or _get_bool("DRY_RUN", False),
         log_level=(_get("LOG_LEVEL", "INFO") or "INFO").upper(),
     )

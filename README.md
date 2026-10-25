@@ -1,4 +1,4 @@
-# mail2web
+# mail-to-pdf
 
 Kleiner Dienst, der ein E-Mail-Postfach überwacht und passende **PDF-Anhänge**
 automatisch auf einen Webserver überträgt.
@@ -87,14 +87,14 @@ Key-Eingaben.
 
 | Variable | Standard | Bedeutung |
 |---|---|---|
-| `STATE_FILE` | `/tmp/mail2web-state.json` | Merker für verarbeitete Nachrichten |
+| `STATE_FILE` | `/tmp/mail-to-pdf-state.json` | Merker für verarbeitete Nachrichten |
 | `LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `DRY_RUN` | `false` | wie `--dry-run` |
 
 ## Lokal testen
 
 ```bash
-cd mail2web
+cd mail-to-pdf
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 python -m unittest discover -s tests -v      # Filter-Tests
@@ -110,17 +110,17 @@ lädt aber nichts hoch und markiert keine Mail als gelesen.
 ## Container
 
 ```bash
-docker build -t mail2web:0.1.0 .
-docker run --rm --env-file .env mail2web:0.1.0 --once --dry-run
+docker build -t mail-to-pdf:0.1.0 .
+docker run --rm --env-file .env mail-to-pdf:0.1.0 --once --dry-run
 ```
 
 ## k3s
 
 ```bash
-kubectl create namespace mail2web
+kubectl create namespace mail-to-pdf
 
 # Zugangsdaten aus Dateien - nichts landet in der Shell-History
-kubectl -n mail2web create secret generic mail2web-secrets \
+kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
   --from-literal=IMAP_PASSWORD='…' \
   --from-file=SSH_PRIVATE_KEY=/pfad/zum/id_ed25519
 
@@ -128,7 +128,7 @@ kubectl apply -f k8s/configmap.yaml
 # vorher in k8s/deployment.yaml das Image auf die eigene Registry setzen
 kubectl apply -f k8s/deployment.yaml
 
-kubectl -n mail2web logs -f deploy/mail2web
+kubectl -n mail-to-pdf logs -f deploy/mail-to-pdf
 ```
 
 Wichtig:

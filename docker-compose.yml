@@ -1,9 +1,9 @@
 # Lokaler Test: Konfiguration in .env ablegen (nicht ins Repo!)
 services:
-  mail2web:
+  mail-to-pdf:
     build: .
-    image: mail2web:dev
-    container_name: mail2web
+    image: mail-to-pdf:dev
+    container_name: mail-to-pdf
     env_file: .env
     command: ["--once", "--dry-run"]
     restart: "no"
