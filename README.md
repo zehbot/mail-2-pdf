@@ -91,6 +91,66 @@ Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret
 \* genau eines der drei Host-Key-Verfahren beziehungsweise einer der beiden
 Key-Eingaben.
 
+### Schlüsselpaar erzeugen (id_ed25519)
+
+Für den Upload braucht das Programm einen eigenen SSH-Schlüssel. Er wird
+**ohne Passphrase** erzeugt, weil der Dienst ihn unbeaufsichtigt laden muss –
+der Schutz kommt aus den Dateirechten und daraus, dass `private/` nicht ins Repo
+gelangt.
+
+```bash
+cd mail-to-pdf
+ssh-keygen -q -t ed25519 -f private/id_ed25519 -N "" -C "mail-to-pdf@example.org"
+chmod 600 private/id_ed25519
+chmod 644 private/id_ed25519.pub
+```
+
+Ergebnis:
+
+```
+private/id_ed25519       privater Schlüssel  (600, bleibt lokal)
+private/id_ed25519.pub   öffentlicher Schlüssel (wird auf dem Server hinterlegt)
+```
+
+**Public Key auf dem Zielserver eintragen** (als `root`):
+
+```bash
+# Benutzer existiert schon? sonst anlegen
+id speiseplan >/dev/null 2>&1 || useradd -m -s /usr/sbin/nologin speiseplan
+
+install -d -m 700 -o speiseplan -g speiseplan /home/speiseplan/.ssh
+cat private/id_ed25519.pub | ssh root@www.example.org \
+  "cat >> /home/speiseplan/.ssh/authorized_keys"
+ssh root@www.example.org "chown speiseplan: /home/speiseplan/.ssh/authorized_keys && chmod 600 /home/speiseplan/.ssh/authorized_keys"
+```
+
+> **Chroot-Falle:** `authorized_keys` gehört ins echte Home
+> (`/home/speiseplan/.ssh/`), **nicht** ins Web-Verzeichnis. sshd liest die
+> Datei vor dem Chroot; im Docroot wäre sie außerdem über HTTP erreichbar.
+
+**Testen:**
+
+```bash
+ssh-keygen -lf private/id_ed25519.pub          # Fingerprint des Schlüssels
+ssh -i private/id_ed25519 speiseplan@www.example.org   # sollte eine Shell bzw. SFTP liefern
+```
+
+**Für k3s:** der private Schlüssel kommt ins Secret, nicht ins Image:
+
+```bash
+kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
+  --from-env-file=/tmp/mail-to-pdf-secrets.env \
+  --from-file=SSH_PRIVATE_KEY=private/id_ed25519
+
+kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
+```
+
+Im Pod liegt er als Datei unter `/run/secrets/ssh/id_ed25519` (0440, `fsGroup 1000`).
+
+**Schlüssel wechseln:** neues Paar erzeugen, Public Key zusätzlich hinterlegen,
+Secret aktualisieren, neu ausrollen – erst danach den alten Eintrag in
+`authorized_keys` entfernen. So gibt es keine Ausfallzeit.
+
 ### Host-Key prüfen und pinnen
 
 Der Fingerprint schützt davor, dass sich ein fremder Server als Ziel ausgibt.
@@ -217,7 +277,7 @@ Secret anlegen, ohne dass Werte in der History landen:
 ```bash
 # Variante A: mehrere Werte aus einer geschützten Datei
 cat > /tmp/mail-to-pdf-secrets.env <<'EOF'
-IMAP_PASSWORD=***
+IMAP_PASSWORD=hier-das-postfach-passwort-eintragen
 EOF
 chmod 600 /tmp/mail-to-pdf-secrets.env
 
