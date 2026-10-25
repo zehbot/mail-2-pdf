@@ -245,6 +245,30 @@ python -m app.main                            # Dauerbetrieb
 `--dry-run` verbindet sich mit dem Postfach und zeigt, **was** übertragen würde,
 lädt aber nichts hoch und markiert keine Mail als gelesen.
 
+### Betrieb als systemd-Dienst (lokal)
+
+```bash
+sudo cp deployment/systemd/mail-to-pdf.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mail-to-pdf
+systemctl status mail-to-pdf
+```
+
+Das Script schreibt auf `stderr` – systemd übernimmt das automatisch ins Journal,
+`SyslogIdentifier=mail-to-pdf` sorgt für saubere Filterung.
+
+```bash
+journalctl -u mail-to-pdf -f              # live mitlesen
+journalctl -u mail-to-pdf -n 50           # letzte 50 Zeilen
+journalctl -u mail-to-pdf --since "1 hour ago"
+journalctl -u mail-to-pdf -p err          # nur Fehler
+journalctl -u mail-to-pdf -o cat          # nur die Meldung, ohne Metadaten
+```
+
+Die Größe des Journals regelt journald selbst (`/etc/systemd/journald.conf`,
+`SystemMaxUse`). Für k3s ist es dasselbe – dort heißt es
+`kubectl -n mail-to-pdf logs -f deploy/mail-to-pdf`.
+
 ## Container
 
 ```bash
