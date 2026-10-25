@@ -95,6 +95,115 @@ Key-Eingaben.
 | `LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `DRY_RUN` | `false` | wie `--dry-run` |
 
+## Secrets richtig übergeben
+
+### Lokal (Projektverzeichnis)
+
+Ziel: nichts landet im Repo, nichts in der Shell-History.
+
+```bash
+cd mail-to-pdf
+cp .env.example .env
+chmod 600 .env                 # nur du darfst lesen
+$EDITOR .env                   # IMAP_PASSWORD eintragen
+```
+
+Den **privaten Key** nicht in `.env` kleben, sondern als Datei referenzieren:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/mail-to-pdf -N "" -C "mail-to-pdf@$(hostname)"
+# Public Key beim Zielserver hinterlegen, dann:
+export SSH_PRIVATE_KEY_FILE=$HOME/.ssh/mail-to-pdf   # statt SSH_PRIVATE_KEY
+```
+
+Starten:
+
+```bash
+set -a; . ./.env; set +a       # exportiert alle Variablen aus .env
+.venv/bin/python -m app.main --once --dry-run
+```
+
+Wo landet was:
+
+| Geheimnis | Ort | Rechte |
+|---|---|---|
+| Postfach-Passwort | `.env` (gitignored) | `600` |
+| SSH-Key | `~/.ssh/mail-to-pdf` | `600`, per `SSH_PRIVATE_KEY_FILE` |
+| Zielserver-Fingerprint | `.env` (`SSH_HOST_FINGERPRINT`) | kein Geheimnis, aber Pflicht |
+
+`.env` steht in `.gitignore`; prüfen mit `git check-ignore -v .env`.
+
+### k3s
+
+**Regel: Passwort als Env aus dem Secret, privater Key als gemountete Datei.**
+
+Warum der Unterschied? Env-Variablen stehen in `/proc/<pid>/environ`, tauchen in
+Crash-Dumps und Debug-Ausgaben auf. Eine Datei mit `0400`/`0440` ist deutlich
+schwerer versehentlich zu leaken — deshalb mountet das Deployment den Key unter
+`/run/secrets/ssh/id_ed25519` und setzt nur `SSH_PRIVATE_KEY_FILE`.
+
+Secret anlegen, ohne dass Werte in der History landen:
+
+```bash
+# Variante A: mehrere Werte aus einer geschützten Datei
+cat > /tmp/mail-to-pdf-secrets.env <<'EOF'
+IMAP_PASSWORD=***
+EOF
+chmod 600 /tmp/mail-to-pdf-secrets.env
+
+kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
+  --from-env-file=/tmp/mail-to-pdf-secrets.env \
+  --from-file=SSH_PRIVATE_KEY=$HOME/.ssh/mail-to-pdf
+
+shred -u /tmp/mail-to-pdf-secrets.env 2>/dev/null || rm -f /tmp/mail-to-pdf-secrets.env
+```
+
+Das Secret enthält danach die Schlüssel `IMAP_PASSWORD` (Env) und
+`SSH_PRIVATE_KEY` (Datei). Im Pod:
+
+```yaml
+env:
+  - name: IMAP_PASSWORD
+    valueFrom: { secretKeyRef: { name: mail-to-pdf-secrets, key: IMAP_PASSWORD } }
+  - name: SSH_PRIVATE_KEY_FILE
+    value: /run/secrets/ssh/id_ed25519
+volumeMounts:
+  - { name: ssh-key, mountPath: /run/secrets/ssh, readOnly: true }
+volumes:
+  - name: ssh-key
+    secret:
+      secretName: mail-to-pdf-secrets
+      defaultMode: 0440            # mit fsGroup: 1000 lesbar für uid 1000
+      items: [{ key: SSH_PRIVATE_KEY, path: id_ed25519 }]
+```
+
+`0440` + `fsGroup: 1000` ist der Punkt, an dem es sonst klemmt: Secret-Dateien
+gehören `root`, und `0400` wäre für den Container-Benutzer (uid 1000) nicht lesbar.
+
+### Rotation
+
+```bash
+kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
+  --from-env-file=… --from-file=SSH_PRIVATE_KEY=… \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
+```
+
+Env-Variablen werden im laufenden Pod **nicht** aktualisiert — der Neustart ist
+Pflicht. Gemountete Secrets aktualisiert kubelet dagegen automatisch (das
+Programm liest den Key allerdings nur beim Verbindungsaufbau).
+
+### Wenn die Manifeste ins Git sollen (GitOps)
+
+Dann keine Klartext-Secrets einchecken, sondern eine der Varianten:
+
+- **Sealed Secrets** (Bitnami): verschlüsselte `SealedSecret`-Objekte im Repo
+- **SOPS + age**: verschlüsselte `.enc.yaml`, Entschlüsselung im Cluster
+- **External Secrets Operator**: Werte bleiben im Backend (Vault, 1Password, …)
+
+`k8s/secret.example.yaml` bleibt in jedem Fall eine Vorlage mit Platzhaltern.
+
 ## Lokal testen
 
 ```bash

@@ -39,11 +39,10 @@ spec:
                 secretKeyRef:
                   name: mail-to-pdf-secrets
                   key: IMAP_PASSWORD
-            - name: SSH_PRIVATE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: mail-to-pdf-secrets
-                  key: SSH_PRIVATE_KEY
+            # Der Key kommt als Datei, nicht als Env-Variable:
+            # Env-Werte stehen in /proc/<pid>/environ und in Crash-Dumps.
+            - name: SSH_PRIVATE_KEY_FILE
+              value: /run/secrets/ssh/id_ed25519
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -59,6 +58,16 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: ssh-key
+              mountPath: /run/secrets/ssh
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: ssh-key
+          secret:
+            secretName: mail-to-pdf-secrets
+            defaultMode: 0440          # Gruppe darf lesen (fsGroup 1000)
+            items:
+              - key: SSH_PRIVATE_KEY
+                path: id_ed25519
