@@ -14,6 +14,7 @@ from . import __version__
 from .config import ConfigError, load_settings
 from .filters import render_remote_name
 from .mail import Candidate, connect, find_candidates, mark_seen
+from .notify import send_reply
 from .state import State
 from .transfer import upload
 
@@ -60,6 +61,8 @@ def handle_candidate(settings, state: State, client, candidate: Candidate) -> No
             settings.remote_dir,
             remote_name,
         )
+        if settings.reply_enabled and settings.reply_on_dry_run:
+            _send_reply_safely(settings, candidate, dry_run=True)
         return
 
     try:
@@ -80,6 +83,9 @@ def handle_candidate(settings, state: State, client, candidate: Candidate) -> No
         len(candidate.payload),
         candidate.sender,
     )
+
+    if settings.reply_enabled:
+        _send_reply_safely(settings, candidate, dry_run=False)
 
 
 def main(argv: Optional[list[str]] = None) -> int:

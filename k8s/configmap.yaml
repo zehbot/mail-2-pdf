@@ -30,3 +30,11 @@ data:
   SSH_HOST_FINGERPRINT: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
   STATE_FILE: "/tmp/mail-to-pdf-state.json"
   LOG_LEVEL: "INFO"
+  # Bestaetigung an den Absender
+  REPLY_ENABLED: "true"
+  REPLY_ON_DRY_RUN: "false"
+  REPLY_TEXT: "Die Datei wurde erfolgreich uebertragen."
+  SMTP_HOST: "smtp.ionos.de"
+  SMTP_PORT: "587"
+  SMTP_STARTTLS: "true"
+  SMTP_SSL: "false"

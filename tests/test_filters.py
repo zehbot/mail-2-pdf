@@ -108,5 +108,43 @@ class FileNameTests(unittest.TestCase):
             filename_matches("x.pdf", "(")
 
 
+class ReplyTests(unittest.TestCase):
+    """Prüft nur den Aufbau der Bestätigungs-Mail (ohne SMTP)."""
+
+    class Stub:
+        smtp_from = "m2f@hase10.de"
+        imap_user = "m2f@hase10.de"
+        reply_subject_prefix = "Re: "
+        reply_text = "Die Datei wurde erfolgreich uebertragen."
+
+    def _build(self, subject="Speiseplan", message_id="<abc@example.org>", dry_run=False):
+        from app.notify import build_reply
+
+        return build_reply(self.Stub(), "sekretariat@schule.de", subject, message_id, dry_run=dry_run)
+
+    def test_recipient_and_subject(self):
+        msg = self._build()
+        self.assertEqual(msg["To"], "sekretariat@schule.de")
+        self.assertEqual(msg["Subject"], "Re: Speiseplan")
+
+    def test_subject_prefix_not_doubled(self):
+        msg = self._build(subject="Re: Speiseplan")
+        self.assertEqual(msg["Subject"], "Re: Speiseplan")
+
+    def test_threading_headers(self):
+        msg = self._build()
+        self.assertEqual(msg["In-Reply-To"], "<abc@example.org>")
+        self.assertEqual(msg["References"], "<abc@example.org>")
+
+    def test_body_contains_text(self):
+        msg = self._build()
+        self.assertIn("erfolgreich uebertragen", msg.get_content())
+
+    def test_dry_run_is_marked(self):
+        msg = self._build(dry_run=True)
+        self.assertTrue(msg["Subject"].startswith("[TEST] "))
+        self.assertIn("Testlauf", msg.get_content())
+
+
 if __name__ == "__main__":
     unittest.main()

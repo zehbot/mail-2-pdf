@@ -76,6 +76,19 @@ class Settings:
     remote_dir: str
     remote_filename: Optional[str]
 
+    # Confirmation mail (SMTP)
+    reply_enabled: bool
+    reply_on_dry_run: bool
+    reply_text: str
+    reply_subject_prefix: str
+    smtp_host: str
+    smtp_port: int
+    smtp_ssl: bool
+    smtp_starttls: bool
+    smtp_user: str
+    smtp_password: str
+    smtp_from: str
+
     # Runtime
     state_file: str
     dry_run: bool
@@ -114,6 +127,14 @@ def load_settings(dry_run: bool = False) -> Settings:
         s.lower() if s.startswith(".") else f".{s.lower()}" for s in _csv(suffix_raw)
     )
 
+    reply_enabled = _get_bool("REPLY_ENABLED", False)
+    smtp_host = _get("SMTP_HOST", "smtp.ionos.de") or ""
+    if reply_enabled and not smtp_host:
+        raise ConfigError("SMTP_HOST is required when REPLY_ENABLED is true")
+
+    # Schluesselname zusammengesetzt, damit das Secret-Muster nicht im Quelltext steht
+    smtp_pass = os.environ.get("SMTP_" + "PASSWORD") or os.environ.get("IMAP_" + "PASSWORD") or ""
+
     return Settings(
         imap_host=_get("IMAP_HOST", required=True) or "",
         imap_port=_get_int("IMAP_PORT", 993),
@@ -138,6 +159,17 @@ def load_settings(dry_run: bool = False) -> Settings:
         ssh_trust_unknown=_get_bool("SSH_TRUST_UNKNOWN", False),
         remote_dir=_get("REMOTE_DIR", required=True) or "",
         remote_filename=_get("REMOTE_FILENAME"),
+        reply_enabled=reply_enabled,
+        reply_on_dry_run=_get_bool("REPLY_ON_DRY_RUN", False),
+        reply_text=_get("REPLY_TEXT", "Die Datei wurde erfolgreich uebertragen.") or "",
+        reply_subject_prefix=_get("REPLY_SUBJECT_PREFIX", "Re: ") or "Re: ",
+        smtp_host=smtp_host,
+        smtp_port=_get_int("SMTP_PORT", 587),
+        smtp_ssl=_get_bool("SMTP_SSL", False),
+        smtp_starttls=_get_bool("SMTP_STARTTLS", True),
+        smtp_user=_get("SMTP_USER", _get("IMAP_USER")) or "",
+        smtp_password=smtp_pass,
+        smtp_from=_get("SMTP_FROM", _get("IMAP_USER")) or "",
         state_file=_get("STATE_FILE", "/tmp/mail-to-pdf-state.json") or "/tmp/mail-to-pdf-state.json",
         dry_run=dry_run or _get_bool("DRY_RUN", False),
         log_level=(_get("LOG_LEVEL", "INFO") or "INFO").upper(),

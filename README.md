@@ -22,6 +22,8 @@ IMAP-Postfach ──► Filter (Absender, Betreff, Anhang) ──► SFTP ──
   5. Größe ≤ `MAX_ATTACHMENT_MB`
 - Lädt den Anhang per **SFTP** hoch, schreibt erst in eine `.part`-Datei und
   benennt sie atomar um – Besucher sehen nie eine halbe PDF.
+- Antwortet optional dem Absender („Datei erfolgreich übertragen"), inklusive
+  `In-Reply-To`/`References`, damit die Mail im selben Thread landet.
 - Markiert die Mail danach als gelesen (`\Seen`) und merkt sich die Message-ID
   in einer kleinen State-Datei. Schlägt der Upload fehl, bleibt die Mail
   ungelesen und wird im nächsten Zyklus erneut versucht.
@@ -93,6 +95,15 @@ Key-Eingaben.
 
 | Variable | Standard | Bedeutung |
 |---|---|---|
+| `REPLY_ENABLED` | `false` | Bestätigungsmail an den Absender senden |
+| `REPLY_ON_DRY_RUN` | `false` | Bestätigung auch im Dry-Run (Betreff erhält `[TEST] `) |
+| `REPLY_TEXT` | „Die Datei wurde erfolgreich übertragen." | Textkörper der Antwort |
+| `REPLY_SUBJECT_PREFIX` | `Re: ` | Präfix; wird nicht doppelt gesetzt |
+| `SMTP_HOST` | `smtp.ionos.de` | SMTP-Server |
+| `SMTP_PORT` | `587` | Port |
+| `SMTP_STARTTLS` / `SMTP_SSL` | `true` / `false` | Verschlüsselung |
+| `SMTP_USER` / `SMTP_PASSWORD` | = `IMAP_USER` / `IMAP_PASSWORD` | Zugangsdaten |
+| `SMTP_FROM` | = `IMAP_USER` | Absenderadresse |
 | `STATE_FILE` | `/tmp/mail-to-pdf-state.json` | Merker für verarbeitete Nachrichten |
 | `LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `DRY_RUN` | `false` | wie `--dry-run` |
