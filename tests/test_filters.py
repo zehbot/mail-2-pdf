@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import sys
 import unittest
 from datetime import datetime
+from pathlib import Path
 
-from app.filters import (
+# Projektwurzel in den Suchpfad legen, damit auch
+# `python3 tests/test_filters.py` das Paket `app` findet.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.filters import (  # noqa: E402  (Import nach sys.path-Anpassung)
     has_suffix,
     looks_like_pdf,
     parse_address,
