@@ -73,6 +73,27 @@ Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret
 | `ATTACHMENT_NAME_REGEX` | nein | – | optionaler Regex auf den Dateinamen |
 | `MAX_ATTACHMENT_MB` | nein | `25` | Größenlimit pro Datei |
 
+**Allowlist erweitern:** ein Eintrag pro Zeile oder mit Komma getrennt – beides
+ist gleichwertig. Im Kubernetes-ConfigMap geht nur die Block-Schreibweise, weil
+ConfigMap-Werte Strings sein müssen (ein YAML-Array unter `data:` ist nicht
+erlaubt):
+
+```yaml
+data:
+  # Variante 1: eine Zeile, Komma-getrennt
+  SENDER_ALLOWLIST: "sekretariat@example.org,hausmeister@example.org,*@example.org"
+
+  # Variante 2: Block-String mit "- " pro Eintrag
+  SENDER_ALLOWLIST: |
+    - sekretariat@example.org
+    - "*@example.org"
+    - "/^info\+.*@example\.org$/"
+```
+
+Musterarten: exakte Adresse, `*@domain` (Glob) oder `/regex/`. Groß-/Kleinschreibung
+spielt keine Rolle. Nach jeder Änderung `kubectl apply` **und**
+`rollout restart` – ConfigMap-Werte landen nur beim Pod-Start in der Umgebung.
+
 ### Zielserver
 
 | Variable | Pflicht | Standard | Bedeutung |

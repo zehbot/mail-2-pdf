@@ -1,40 +1,66 @@
-# Nicht-geheime Einstellungen. Namen an die eigene Umgebung anpassen.
+# Nicht-geheime Einstellungen für mail-to-pdf.
+#
+# Alles mit "TODO" muss vor dem Ausrollen angepasst werden. Geheimnisse
+# (IMAP_PASSWORD, SSH_PRIVATE_KEY) stehen NICHT hier, sondern im Secret.
+#
+#   kubectl apply -f k8s/configmap.yaml
+#   kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
+#
+# Werte sind immer Strings - auch Zahlen und true/false in Anführungszeichen.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mail-to-pdf-config
   namespace: mail-to-pdf
 data:
-  IMAP_HOST: "imap.example.org"
+  # --- Postfach -----------------------------------------------------------
+  IMAP_HOST: "imap.example.org"          # TODO: IMAP-Server des Providers
   IMAP_PORT: "993"
   IMAP_SSL: "true"
-  # TODO: echte Postfachadresse eintragen
-  IMAP_USER: "speiseplan@example.org"
-  IMAP_MAILBOX: "INBOX"
-  POLL_INTERVAL: "60"
-  # Nur diese Absender dürfen etwas auslösen (exakt, *@domain oder /regex/)
-  SENDER_ALLOWLIST: "sekretariat@example.org"
-  # Optional: Betreff muss passen (Regex, case-insensitiv)
-  SUBJECT_REGEX: "speiseplan"
-  ATTACHMENT_SUFFIXES: ".pdf"
-  # optional: Regex auf den Dateinamen des Anhangs
-  ATTACHMENT_NAME_REGEX: ""
+  IMAP_USER: "speiseplan@example.org"    # TODO: echte Postfachadresse
+  IMAP_MAILBOX: "INBOX"                  # TODO: ggf. eigener Ordner, z. B. "Speiseplan"
+  POLL_INTERVAL: "60"                    # Sekunden zwischen den Durchläufen (min. 10)
+
+  # --- Filter -------------------------------------------------------------
+  # Absender-Allowlist: fail-closed, ohne Treffer wird nichts verarbeitet.
+  # Drei Schreibweisen sind gleichwertig (Komma, Zeilen, Blockliste):
+  #
+  #   SENDER_ALLOWLIST: "a@b.de,*@example.org,/^info\+.*@x\.de$/"
+  #
+  #   SENDER_ALLOWLIST: |
+  #     - a@b.de
+  #     - "*@example.org"
+  #     - "/^info\+.*@x\.de$/"
+  #
+  # Hinweis: ein YAML-Array (Liste mit "- " direkt unter data:) ist NICHT
+  # möglich - ConfigMap-Werte müssen Strings sein, deshalb die Block-Schreibweise
+  # mit "|" (mehrzeiliger String).
+  SENDER_ALLOWLIST: "sekretariat@example.org"   # TODO: echte Absender eintragen
+  SUBJECT_REGEX: "speiseplan"            # optional, Regex auf den Betreff
+  ATTACHMENT_SUFFIXES: ".pdf"            # erlaubte Endungen
+  ATTACHMENT_NAME_REGEX: ""              # optional, z. B. "^speiseplan.*\.pdf$"
   MAX_ATTACHMENT_MB: "25"
-  SSH_HOST: "www.example.org"
+
+  # --- Zielserver (SSH/SFTP) ---------------------------------------------
+  SSH_HOST: "www.example.org"            # TODO: Webserver
   SSH_PORT: "22"
-  SSH_USER: "speiseplan"
-  REMOTE_DIR: "/var/www/example-web/dokumente"
-  # Fester Zielname; ohne Angabe bleibt der Dateiname des Anhangs
-  REMOTE_FILENAME: "Speiseplan.pdf"
-  # Host-Key-Prüfung: SHA256-Fingerprint des Servers (ssh-keygen -lf ...)
-  SSH_HOST_FINGERPRINT: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  STATE_FILE: "/tmp/mail-to-pdf-state.json"
-  LOG_LEVEL: "INFO"
-  # Bestaetigung an den Absender
+  SSH_USER: "speiseplan"                 # TODO: Benutzer mit Schreibrecht in REMOTE_DIR
+  REMOTE_DIR: "/var/www/example-web/dokumente"   # TODO: Zielordner
+  REMOTE_FILENAME: "Speiseplan.pdf"      # fest; ohne Angabe bleibt der Anhangsname
+  # Pflicht: SHA256-Fingerprint des Servers, ermitteln mit
+  #   ssh-keyscan -t ed25519 <host> | ssh-keygen -lf -
+  # oder auf dem Server: ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+  SSH_HOST_FINGERPRINT: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"   # TODO
+
+  # --- Bestätigung an den Absender ---------------------------------------
   REPLY_ENABLED: "true"
-  REPLY_ON_DRY_RUN: "false"
+  REPLY_ON_DRY_RUN: "false"              # true = Testmail auch im Dry-Run
   REPLY_TEXT: "Die Datei wurde erfolgreich übertragen."
-  SMTP_HOST: "smtp.example.org"
+  SMTP_HOST: "smtp.example.org"          # TODO: SMTP-Server des Providers
   SMTP_PORT: "587"
   SMTP_STARTTLS: "true"
   SMTP_SSL: "false"
+
+  # --- Laufzeit -----------------------------------------------------------
+  STATE_FILE: "/tmp/mail-to-pdf-state.json"
+  LOG_LEVEL: "INFO"                      # DEBUG zeigt Filterdetails pro Nachricht

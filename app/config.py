@@ -38,9 +38,39 @@ def _get_int(name: str, default: int) -> int:
 
 
 def _csv(raw: Optional[str]) -> tuple[str, ...]:
+    """Parse a comma-separated list, a block list or a mix of both.
+
+    Accepted (all equivalent)::
+
+        a@b.de,*@example.org
+        a@b.de
+        *@example.org
+        |
+          - a@b.de
+          - "*@example.org"
+
+    Regex entries (/.../) are kept whole even if they contain a comma.
+    """
     if not raw:
         return ()
-    return tuple(part.strip() for part in raw.split(",") if part.strip())
+
+    entries: list[str] = []
+    for line in raw.replace("\r", "\n").split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("- "):
+            line = line[2:].strip()
+        elif line == "-":
+            continue
+
+        is_regex = len(line) > 2 and line.startswith("/") and line.endswith("/")
+        parts = [line] if is_regex else line.split(",")
+        for part in parts:
+            item = part.strip().strip('"').strip("'").strip()
+            if item:
+                entries.append(item)
+    return tuple(entries)
 
 
 @dataclass(frozen=True)
