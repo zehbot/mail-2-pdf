@@ -1,0 +1,29 @@
+# Nicht-geheime Einstellungen. Namen an die eigene Umgebung anpassen.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mail2web-config
+  namespace: mail2web
+data:
+  IMAP_HOST: "imap.example.org"
+  IMAP_PORT: "993"
+  IMAP_SSL: "true"
+  IMAP_USER: "speiseplan@example.org"
+  IMAP_MAILBOX: "INBOX"
+  POLL_INTERVAL: "60"
+  # Nur diese Absender dürfen etwas auslösen (exakt, *@domain oder /regex/)
+  SENDER_ALLOWLIST: "sekretariat@example.org"
+  # Optional: Betreff muss passen (Regex, case-insensitiv)
+  SUBJECT_REGEX: "speiseplan"
+  ATTACHMENT_SUFFIXES: ".pdf"
+  MAX_ATTACHMENT_MB: "25"
+  SSH_HOST: "www.example.org"
+  SSH_PORT: "22"
+  SSH_USER: "speiseplan"
+  REMOTE_DIR: "/var/www/gsr-html-web/dokumente"
+  # Fester Zielname; ohne Angabe bleibt der Dateiname des Anhangs
+  REMOTE_FILENAME: "Speiseplan.pdf"
+  # Host-Key-Prüfung: SHA256-Fingerprint des Servers (ssh-keygen -lf ...)
+  SSH_HOST_FINGERPRINT: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  STATE_FILE: "/tmp/mail2web-state.json"
+  LOG_LEVEL: "INFO"

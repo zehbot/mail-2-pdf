@@ -1,0 +1,14 @@
+# Lokaler Test: Konfiguration in .env ablegen (nicht ins Repo!)
+services:
+  mail2web:
+    build: .
+    image: mail2web:dev
+    container_name: mail2web
+    env_file: .env
+    command: ["--once", "--dry-run"]
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true

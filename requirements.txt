@@ -1,0 +1,2 @@
+# IMAP + SFTP ohne externe Binaries
+paramiko>=3.4,<4
