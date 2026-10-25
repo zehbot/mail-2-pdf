@@ -733,6 +733,11 @@ was automatisch passiert (Bestätigungsmail, Umbenennung auf `Speiseplan.pdf`)
 und eine Fehlertabelle. Dieselbe Anleitung gibt es als **PDF** zum Ausdrucken
 oder Weitergeben: `docs/speiseplan-per-mail.pdf` (2 Seiten, A4).
 
+Für die Weitergabe an das Kollegium gibt es zusätzlich eine **offizielle
+Fassung** ohne private Adressen (`docs/speiseplan-per-mail-offiziell.pdf`):
+dort ist nur der Schul-Absender `*@odenwaldkreis.de` genannt, das Postfach
+erscheint als „Postfachadresse der Schule".
+
 Neu erzeugen nach Änderungen an der Markdown-Datei:
 
 ```bash
