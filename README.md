@@ -560,14 +560,47 @@ Namespace mail-to-pdf
 kubectl create namespace mail-to-pdf
 ```
 
-### 2. Secret erzeugen
+### 2. Secret anlegen
+
+Das Secret enthält genau zwei Werte: `IMAP_PASSWORD` und `SSH_PRIVATE_KEY`.
+
+**A. Fertige Datei anwenden – der einfache Weg**
+
+Wenn `private/k8s/secret.yaml` existiert (vom Generator erzeugt), ist es ein
+einzelner Befehl:
+
+```bash
+kubectl apply -f private/k8s/secret.yaml
+```
+
+Kontrolle, dass beide Schlüssel angekommen sind (nur Namen, keine Werte):
+
+```bash
+kubectl -n mail-to-pdf get secret mail-to-pdf-secrets \
+  -o go-template='{{range $k, $v := .data}}{{$k}}{{"\n"}}{{end}}'
+```
+
+Datei erzeugen bzw. nach einem Passwortwechsel erneuern:
+
+```bash
+.venv/bin/python tools/k8s_from_env.py private/mail-to-pdf.env private/k8s
+kubectl apply -f private/k8s/secret.yaml
+kubectl -n mail-to-pdf rollout restart deployment/mail-to-pdf
+```
+
+Nach dem Anwenden löschen – die Datei enthält das Passwort im Klartext:
+
+```bash
+shred -u private/k8s/secret.yaml
+```
+
+**B. Von Hand erzeugen – ohne Generator**
 
 Werte kommen aus Dateien, nicht aus der Shell-History:
 
 ```bash
-# Passwort in eine geschützte Datei schreiben (Editor, nicht echo)
 install -m 600 /dev/null /tmp/mail-to-pdf-secret-values.env
-$EDITOR /tmp/mail-to-pdf-secret-values.env      # Inhalt: IMAP_PASSWORD=…
+$EDITOR /tmp/mail-to-pdf-secret-values.env      # Inhalt: IMAP_PASSWORD=… (nur diese Zeile)
 
 kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
   --from-env-file=/tmp/mail-to-pdf-secret-values.env \
@@ -576,17 +609,15 @@ kubectl -n mail-to-pdf create secret generic mail-to-pdf-secrets \
 shred -u /tmp/mail-to-pdf-secret-values.env
 ```
 
-Kontrolle (nur Schlüsselnamen, keine Werte):
+Beide Wege erzeugen dasselbe Secret – A ist nur bequemer, B braucht kein
+Generator-Skript. Erneutes `apply` mit einer geänderten Datei überschreibt das
+Secret; ein `create` scheitert dagegen, wenn es schon existiert.
 
-```bash
-kubectl -n mail-to-pdf get secret mail-to-pdf-secrets \
-  -o go-template='{{range $k, $v := .data}}{{$k}}{{"\n"}}{{end}}'
-```
-
-> `kubectl -o yaml` **nicht** verwenden – die base64-Werte sind im Klartext lesbar.
+> `kubectl -o yaml` **nicht** verwenden – die base64-Werte sind dort im Klartext
+> lesbar. Für Kontrollen nur die Schlüsselnamen ausgeben.
 
 Weicht das SMTP-Passwort vom IMAP-Passwort ab, zusätzlich
-`--from-literal=SMTP_PASSWORD=…` (bzw. ein weiterer keyRef im Deployment).
+`--from-literal=SMTP_PASSWORD=…` (bzw. ein weiterer `secretKeyRef` im Deployment).
 
 ### 3. ConfigMap anpassen
 
