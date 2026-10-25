@@ -45,6 +45,10 @@ Alles über Umgebungsvariablen (12-Factor, passt zu k3s).
 
 ### Postfach
 
+Beispiel IONOS (siehe `ionos_email_setup.md`): `IMAP_HOST=imap.ionos.de`,
+`IMAP_PORT=993`, `IMAP_SSL=true` – Port und TLS sind bereits die Vorgaben.
+Benutzername ist die vollständige E-Mail-Adresse, das Passwort kommt ins Secret.
+
 | Variable | Pflicht | Standard | Bedeutung |
 |---|---|---|---|
 | `IMAP_HOST` | ja | – | Servename, z. B. `imap.example.org` |

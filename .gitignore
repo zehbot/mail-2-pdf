@@ -17,3 +17,4 @@ __pycache__/
 # Laufzeitdaten
 state.json
 *.log
+/ionos_email_setup.md

@@ -5,9 +5,10 @@ metadata:
   name: mail-to-pdf-config
   namespace: mail-to-pdf
 data:
-  IMAP_HOST: "imap.example.org"
+  IMAP_HOST: "imap.ionos.de"
   IMAP_PORT: "993"
   IMAP_SSL: "true"
+  # TODO: echte Postfachadresse eintragen
   IMAP_USER: "speiseplan@example.org"
   IMAP_MAILBOX: "INBOX"
   POLL_INTERVAL: "60"
