@@ -10,7 +10,7 @@
 
 [Unit]
 Description=mail-to-pdf - Mailpostfach nach PDF-Upload auf Webserver
-Documentation=file:/home/cbot/PycharmProjects/mail-to-pdf/README.md
+Documentation=file:/opt/mail-to-pdf/README.md
 After=network-online.target
 Wants=network-online.target
 
@@ -18,14 +18,14 @@ Wants=network-online.target
 Type=simple
 User=cbot
 Group=cbot
-WorkingDirectory=/home/cbot/PycharmProjects/mail-to-pdf
+WorkingDirectory=/opt/mail-to-pdf
 
 # Alle Variablen aus der .env; systemd liest die Datei wörtlich (keine Shell),
 # Sonderzeichen wie !! oder $ im Passwort bleiben dadurch unangetastet.
-EnvironmentFile=/home/cbot/PycharmProjects/mail-to-pdf/private/mail-to-pdf.env
+EnvironmentFile=/opt/mail-to-pdf/private/mail-to-pdf.env
 
 Environment=PYTHONDONTWRITEBYTECODE=1
-ExecStart=/home/cbot/PycharmProjects/mail-to-pdf/.venv/bin/python -m app.main
+ExecStart=/opt/mail-to-pdf/.venv/bin/python -m app.main
 Restart=on-failure
 RestartSec=10
 
